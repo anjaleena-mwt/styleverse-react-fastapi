@@ -1,0 +1,25 @@
+
+/* Style for the small circle buttons */
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%; /* makes it a circle */
+  border: 1px solid #ccc;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  transition: all 0.3s ease;
+}
+
+.icon-btn:hover {
+  background-color: #f9f9f9;
+  border-color: deeppink;
+}
+
+.icon-btn i {
+  font-size: 18px;
+  pointer-events: none; /* prevents double clicks on icon only */
+}

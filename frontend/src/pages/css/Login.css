@@ -1,0 +1,82 @@
+body {
+  background: #fbf6f1;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+#loginForm {
+  max-width: 450px;
+  margin: 20px auto;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(7, 7, 7, 0.51);
+  padding: 30px;
+}
+
+#loginForm h1 {
+  text-align: center;
+  font-family: "Cinzel", "Times New Roman", serif;
+  color: #2b1b15;
+  font-size:29px;
+  font-weight:bold;
+  background:none;
+  margin-bottom: 20px;
+}
+
+#loginForm label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #2b1b15;
+}
+
+#loginForm input[type="text"],
+#loginForm input[type="password"] {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  border: 1px solid #e3e0de;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+#loginForm input::placeholder {
+  color: #7a6a60;
+}
+
+#loginForm input[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(180deg, #cf9a6e, #c28758);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+#loginForm input[type="submit"]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(194, 140, 95, 0.22);
+}
+
+#loginForm div:last-child {
+  margin-top: 15px;
+  font-size: 15px;
+  color: #2b1b15;
+}
+
+#loginForm div:last-child a {
+  color: #c48a6a;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+#loginForm div:last-child a:hover {
+  text-decoration: underline;
+}

@@ -1,0 +1,85 @@
+
+
+body {
+  margin: 0;
+  font-family: 'Times New Roman', Times, serif;
+  background-color: #f7f3ed; 
+}
+
+#registerForm {
+  background: #fff;
+  width: 400px;
+  margin: 50px auto;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(5, 4, 4, 0.73);
+}
+
+#registerForm h1 {
+  text-align: center;
+  font-size: 28px;
+  font-weight: bold;
+  color: #141313ff;
+  background:none;
+  margin-bottom: 20px;
+}
+
+#registerForm label {
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #4b3d30;
+}
+
+#registerForm input[type="text"],
+#registerForm input[type="password"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+#registerForm input[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  background-color: #c29261;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+#registerForm input[type="submit"]:hover {
+  background-color: #be9770;
+}
+
+.error {
+  color: red;
+  font-size: 12px;
+  margin-bottom: 10px;
+  display: block;
+}
+
+#registerForm div:last-child {
+  margin-top: 15px;
+  text-align: center;
+  font-size: 14px;
+}
+
+#registerForm a {
+  color: #d1b191;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+#registerForm a:hover {
+  text-decoration: underline;
+}
+

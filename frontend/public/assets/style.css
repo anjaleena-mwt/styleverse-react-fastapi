@@ -1,0 +1,636 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Font */
+body {
+  font-family: Arial, sans-serif;
+}
+
+.cinzel-font {
+  font-family: 'Cinzel', serif;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /*Removes any scroll bar horizontally (no side scrolling)*/
+}
+
+/* Navbar */
+.navbar {
+  background-color: #fff;
+  padding: 10px 20px;
+}
+
+.navbar-brand {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.text-pink {
+  color: #e91e63;
+  font-family: 'Cinzel Decorative';
+}
+
+.text-black {
+  color: #000;
+  font-family: 'Cinzel Decorative';
+}
+
+.navbar-nav .nav-link {
+  color: #000 !important; /* !important - highest priority*/
+  font-size: 19px;
+  font-weight: 400;
+  margin-right: 10px;
+}
+
+.navbar-toggler-icon {
+  font-size: 1rem;
+  color: #000;
+}
+
+/* Search Bar Styling */
+.search-container {
+  background-color: #f5f5f5;
+  border-radius: 6px;
+  padding: 6px 12px;
+  flex: 1;
+}
+
+.search-icon {
+  color: #888;
+  margin-right: 10px;
+}
+
+.search-input {
+  border: none;
+  background: transparent;
+  outline: none; /*it removes the blackcolor outline*/
+  width: 100%;
+  color: #333;
+  font-size: 14px;
+}
+
+.search-input::placeholder {
+  color: #888;
+}
+
+/* Icons */
+.nav-icon i {
+  font-size: 1.2rem;
+  color: #000;
+}
+.centimg {
+  position: relative;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.centerimg {
+  position: relative;
+}
+
+.centerimg img {
+  width: 100vw;
+  height: auto;
+  display: block;
+}
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+.video-container {
+  position: relative; /*moves from its original place, still in the flow*/
+  width: 100%;
+  padding-bottom: 56.25%; 
+  overflow: hidden; /*This Prevents scrollbars*/
+  border-radius: 10px; 
+}
+
+.video-container video {
+  position: absolute; /*placed exactly where you tell it, based on the nearest positioned ancestor.*/
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Overlay text styles for Elegance Collection*/
+.overlay-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: white;
+  z-index: 2;
+  padding: 0 20px;
+  max-width: 90%;
+}
+
+.overlay-text h1 {
+  font-size: 3em;
+  font-family: 'Cinzel', serif;
+  margin-bottom: 15px;
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.6);
+}
+
+.overlay-text p {
+  font-size: 1.1em;
+  font-family: 'Times New Roman';
+  margin-bottom: 25px;
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+/* Elegance Collection buttons-shop dresses n view bags */
+.button-group a {
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-weight: bold;
+  font-family: 'Segoe UI', sans-serif;
+  transition: all 0.3s ease-in-out;
+}
+
+/* For tablets */
+@media (max-width: 992px) {
+  .overlay-text h1 {
+    font-size: 2.2em;
+  }
+  .overlay-text p {
+    font-size: 1em;
+  }
+  .button-group {
+    gap: 15px;
+  }
+  .button-group a {
+    padding: 10px 20px;
+    font-size: 0.95em;
+  }
+}
+
+/* Mobile-friendly Elegance Collection overlay */
+@media (max-width: 576px) {
+  .overlay-text {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 0 10px;
+    width: 100%;
+  }
+
+  .overlay-text h1 {
+    font-size: 1.4em; /* Smaller heading */
+    margin-bottom: 8px;
+  }
+
+  .overlay-text p {
+    font-size: 0.85em; /* Smaller description */
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  .button-group {
+    flex-direction: column; /* Stack vertically on very small screens */
+    gap: 8px;
+  }
+
+  .button-group a {
+    padding: 8px 16px;
+    font-size: 0.85em;
+    max-width: 200px;
+    margin: 0 auto;
+  }
+}
+
+/* Slightly bigger phones (portrait) */
+@media (min-width: 577px) and (max-width: 768px) {
+  .overlay-text h1 {
+    font-size: 2em;
+  }
+  .overlay-text p {
+    font-size: 1em;
+  }
+  .button-group a {
+    font-size: 0.9em;
+  }
+}
+
+
+/* Button Styles */
+.btn-primary {
+  background-color: #e91e63 !important;
+  color: white;
+}
+.btn-outline {
+  border: 2px solid white;
+  background-color: transparent;
+  color: white !important;
+}
+.btn-primary:hover,
+.btn-outline:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+/* Responsive Styling */
+@media (max-width: 992px) {
+  .search-container {
+    max-width: 180px;
+    margin-top: 10px;
+  }
+
+  .icons {
+    margin-top: 10px;
+  }
+
+  .navbar-nav {
+    text-align: center;
+  }
+
+  .navbar-nav .nav-link {
+    margin-right: 0;
+    padding: 8px 0;
+  }
+}
+/* Shop by category */
+.shop-category {
+  padding: 50px 20px;
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.shop-category h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  font-family: 'cinzel';
+  margin-bottom: 40px;
+}
+
+.category-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 30px;
+}
+
+.category-card {
+  position: relative;
+  width: 300px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+}
+
+.category-card:hover {
+  transform: scale(1.02);
+}
+
+.category-card img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.category-info {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  color: white ;
+  text-align: left;
+  z-index: 2;
+}
+
+.category-info h3 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.category-info p {
+  font-size: 0.9rem;
+  margin: 5px 0 15px;
+}
+.btn-link {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: white;
+  color: black;
+  border-radius: 20px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.btn-link:hover {
+  background-color: #eaeaea;
+  color: black;
+    text-decoration: none;
+
+}
+
+
+/* Elegant Workwear for Women */
+.workwear-women {
+  padding: 50px 20px;
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.workwear-women h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 40px;
+  font-family: 'cinzel';
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+.section-header h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    font-family: 'cinzel';
+    margin: 0;text-align: center;
+}
+.more-link{
+  font-family: 'Times New Roman', Times, serif;
+}
+
+.more-link {
+    font-size: 16px;
+    text-decoration: none;
+    color: #040404;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+.more-link:hover {
+    color: #d64b18;
+    text-decoration: none;
+}
+.product-section {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.product-card {
+  width: 290px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 13px;
+  border-style: groove;
+  border-radius: 10px;
+  border-color: rgb(222, 209, 209);
+  background-color: white;
+  position: relative;
+  transition: transform 0.3s;
+  font-family: 'Times New Roman', Times, serif;
+}
+.product-card h4{
+    font-size: large;
+}
+.product-card:hover {
+  transform: translateY(-5px);
+}
+.product-image {
+  position: relative;
+  width: 100%;
+  height: 390px;
+  overflow: hidden;
+  border-radius: 10px;
+}
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /*used to specify how an image should be resized to fits its container*/
+  display: block;
+}
+
+/* Icon container on top right for dresses*/
+.icon-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.icon-container i:hover {
+  color: #ff4081;
+}
+/* container for the icons */
+.icon-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* details element behaves like a toggle */
+.toggle-btn summary {
+  list-style: none; /* remove default marker */
+  cursor: pointer; /* make it look clickable */
+  display: flex; 
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: white;
+}
+
+/* .toggle-btn summary::-webkit-details-marker { display: none; }  */
+
+/* icon style */
+.toggle-btn i {
+  font-size: 18px;
+  color: #444;
+}
+
+/* hide filled heart/cart initially */
+.toggle-btn .filled { display: none; }
+
+/* when clicked show filled and make it pink */
+.toggle-btn[open] .outline { 
+  display: none; }
+
+.toggle-btn[open] .filled { 
+  display: inline; 
+  color: #e91e63; 
+}
+
+
+/* Designer bags */
+.designer-bags {
+  padding: 50px 20px;
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.designer-bags h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 40px;
+  font-family: 'cinzel';
+}
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.grid-item {
+  position: relative;
+}
+.grid-item h4,p{
+  font-family: 'Times New Roman', Times, serif;
+  font-size: large;
+}
+.image-wrapper img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+.image-wrapper:hover img {
+  transform: scale(1.03);
+}
+.grid-item img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+.grid-item img:hover {
+  transform: scale(1.03);
+}
+
+
+/* Tablet */
+@media (max-width: 992px) {
+  .image-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+  .image-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.classic-jewellery {
+  padding: 50px 20px;
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Jewellery section */
+.classic-jewellery h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 40px;
+  font-family: 'cinzel';
+}
+.classic-jewellery {
+  padding: 40px 20px; 
+  text-align: center;
+}
+.classic-jewellery h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+.classic-jewellery .carousel {
+  max-width: 700px;  
+  margin: 0 auto;     
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+}
+.classic-jewellery .carousel-inner img {
+  width: 100%;
+  height: 430px;
+  object-fit: cover; 
+  border-radius: 10px;
+}
+.carousel-inner h4,p{
+  font-family: 'Times New Roman', Times, serif;
+  font-size: large;
+}
+
+/* Cart Page*/
+.cart-page{
+  margin: 80px auto;
+}
+table{
+  width: 100%;
+  border-collapse: collapse;
+}
+
+footer {
+  text-align: center;
+  padding: 20px;
+  background: #3b2d37;
+  color: #fff;
+  font-family: 'Times New Roman', Times, serif;
+}
+
+@media (max-width: 576px) {
+  .navbar-brand {
+    font-size: 1.5rem;
+  }
+
+  .search-container {
+    max-width: 100%;
+    margin: 10px 0;
+  }
+
+  .search-input {
+    font-size: 13px;
+  }
+
+  .nav-icon i {
+    font-size: 1rem;
+  }
+}
+/* 1) Ensure overlay-text container itself is transparent */
+.overlay-text {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* 2) Make sure the heading has no background or padding creating a block box */
+.overlay-text h1 {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;           /* remove any added padding */
+  display: inline-block;           /* shrink background area to text only */
+}
+
+/* 3) Remove any pseudo-element overlay on the heading or container */
+.overlay-text::before,
+.overlay-text::after,
+.overlay-text h1::before,
+.overlay-text h1::after {
+  display: none !important;
+  content: none !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
