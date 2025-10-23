@@ -634,3 +634,12 @@ footer {
   box-shadow: none !important;
 }
 
+.admin-heading {
+  background:none;
+  color: black;
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  padding: 1.5rem 1rem;
+  margin: 0;
+  font-size: 27px;
+}

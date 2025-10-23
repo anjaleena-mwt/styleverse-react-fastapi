@@ -1,4 +1,3 @@
-// src/components/ProductCard.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
@@ -17,7 +16,7 @@ export default function ProductCard({ product }) {
     img: product?.img || product?.image || "/assets/images/default.jpg",
     price: Number(product?.price) || 0,
     rating: product?.rating || "★★★★☆",
-    reviews: product?.reviews || 0,
+    // reviews removed
   };
 
   // --- Update icon states based on context ---
@@ -126,7 +125,8 @@ export default function ProductCard({ product }) {
 
       <h4 style={{ margin: "8px 0 4px" }}>{safeProduct.title}</h4>
       <div className="rating">
-        {safeProduct.rating} <span>({safeProduct.reviews})</span>
+        {safeProduct.rating}
+        {/* reviews removed, so no "(N)" display */}
       </div>
       <p className="price">
         <strong>${safeProduct.price.toFixed(2)}</strong>

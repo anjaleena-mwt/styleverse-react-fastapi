@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -15,7 +15,13 @@ import Register from './pages/Register';
 import Cart from './pages/Cart';
 import Wishlist from './pages/Wishlist';
 
+import AdminDashboard from './pages/AdminDashboard';
+import AdminProducts from './pages/AdminProducts';
+
 function App() {
+  const location = useLocation();
+  const hideFooterRoutes = ["/login", "/register"];
+
   return (
     <div>
       <Header />
@@ -30,8 +36,12 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+
+        {/* Admin routes */}
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/products" element={<AdminProducts />} />
       </Routes>
-      <Footer />
+      {!hideFooterRoutes.includes(location.pathname) && <Footer />}
     </div>
   );
 }

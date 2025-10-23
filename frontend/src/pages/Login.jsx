@@ -1,4 +1,4 @@
-// src/pages/Login.jsx
+// src/pages/Login.jsx (replace existing file)
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./css/Login.css";
@@ -6,21 +6,20 @@ import "./css/Login.css";
 function Login() {
   const navigate = useNavigate();
 
-  // controlled inputs
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // ✅ Clear inputs when page first loads
   useEffect(() => {
     setEmail("");
     setPassword("");
   }, []);
 
-  // submit handler that calls backend
+  const ADMIN_EMAIL = "admin@gmail.com";
+  const ADMIN_PASSWORD = "adMIN@1234";
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -33,6 +32,22 @@ function Login() {
       return;
     }
 
+    // Check admin credentials locally (hard-coded)
+    if (userEmail === ADMIN_EMAIL && userPassword === ADMIN_PASSWORD) {
+      // Store admin user object in localStorage
+      const adminObj = {
+        username: "admin",
+        user_id: "admin",
+        user_email: ADMIN_EMAIL,
+        address: "",
+        phone_number: "",
+        is_admin: true,
+      };
+      localStorage.setItem("user", JSON.stringify(adminObj));
+      navigate("/admin"); // redirect to admin panel
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch("http://127.0.0.1:8000/login", {
@@ -41,27 +56,24 @@ function Login() {
         body: JSON.stringify({ user_email: userEmail, password: userPassword }),
       });
 
-      // Safely parse JSON (if parse fails we fall back to empty object)
       const json = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        // server returned an error object like { detail: "..." }
         setError(json.detail || "Login failed. Check credentials.");
         setLoading(false);
         return;
       }
 
-      // success — store minimal user info in localStorage
+      // Save returned user (normal user)
       const userObj = {
         username: json.username,
         user_id: json.user_id,
-        user_email: json.user_email, 
+        user_email: json.user_email,
         address: json.address,
         phone_number: json.phone_number,
+        is_admin: false,
       };
       localStorage.setItem("user", JSON.stringify(userObj));
-
-      // navigate to profile page after successful login
       navigate("/profile");
     } catch (err) {
       console.error("Login failed:", err);

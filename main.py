@@ -7,6 +7,10 @@ from database_models import Base, User
 from models import UserCreate, UserLogin
 from products import categories, dressproducts, bagproducts, jewproducts
 
+from fastapi import Body
+from typing import List, Dict, Any
+import uuid
+
 phone_re = re.compile(r'^\+?\d{7,15}$')
 
 # create DB tables if not present
@@ -104,3 +108,75 @@ def get_bag_products():
 @app.get("/jewellery")
 def get_jewellery_products():
     return jewproducts
+
+
+# --- ADMIN product management endpoints ---
+
+# helper: find product list by category id
+def _get_product_list(category: str):
+    if category == "dresses":
+        return dressproducts
+    if category == "bags":
+        return bagproducts
+    if category == "jewellery":
+        return jewproducts
+    return None
+
+# GET all admin products combined (for admin UI convenience)
+@app.get("/admin/products")
+def admin_list_products():
+    # return categories with products
+    return {
+        "dresses": dressproducts,
+        "bags": bagproducts,
+        "jewellery": jewproducts
+    }
+
+# POST add a product to a category
+@app.post("/admin/products", status_code=201)
+def admin_add_product(payload: Dict[str, Any] = Body(...)):
+    """
+    payload example:
+    { "category":"dresses", "title":"New", "img":"/assets/images/x.jpg", "price": 99, "reviews": 0 }
+    """
+    category = payload.get("category")
+    lst = _get_product_list(category)
+    if lst is None:
+        raise HTTPException(status_code=400, detail="Invalid category")
+    # create new id - ensure unique
+    new_id = f"{category[:2]}_{uuid.uuid4().hex[:6]}"
+    product = {
+        "id": payload.get("id", new_id),
+        "title": payload.get("title", "Untitled"),
+        "img": payload.get("img", "/assets/images/default.jpg"),
+        "price": payload.get("price", 0),
+        "reviews": payload.get("reviews", 0)
+    }
+    lst.append(product)
+    return {"message": "created", "product": product}
+
+# PUT update product by id (search all categories)
+@app.put("/admin/products/{product_id}")
+def admin_update_product(product_id: str, payload: Dict[str, Any] = Body(...)):
+    # search and update
+    for lst in (dressproducts, bagproducts, jewproducts):
+        for i, p in enumerate(lst):
+            if p.get("id") == product_id:
+                # update fields present in payload
+                p["title"] = payload.get("title", p["title"])
+                p["img"] = payload.get("img", p["img"])
+                p["price"] = payload.get("price", p["price"])
+                p["reviews"] = payload.get("reviews", p["reviews"])
+                lst[i] = p
+                return {"message": "updated", "product": p}
+    raise HTTPException(status_code=404, detail="Product not found")
+
+# DELETE product by id
+@app.delete("/admin/products/{product_id}")
+def admin_delete_product(product_id: str):
+    for lst in (dressproducts, bagproducts, jewproducts):
+        for i, p in enumerate(lst):
+            if p.get("id") == product_id:
+                lst.pop(i)
+                return {"message": "deleted", "product_id": product_id}
+    raise HTTPException(status_code=404, detail="Product not found")
