@@ -18,9 +18,11 @@ import Wishlist from './pages/Wishlist';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminProducts from './pages/AdminProducts';
 
+import Payment from "./pages/Payment";
+
 function App() {
   const location = useLocation();
-  const hideFooterRoutes = ["/login", "/register"];
+  const hideFooterRoutes = ["/login", "/register","/payment","/wishlist","/cart"];
 
   return (
     <div>
@@ -36,6 +38,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/payment" element={<Payment />} />
 
         {/* Admin routes */}
         <Route path="/admin" element={<AdminDashboard />} />

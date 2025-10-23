@@ -127,6 +127,15 @@ export default function Cart() {
             </tbody>
           </table>
         </div>
+         {/* ✅ Make Payment button */}
+        <div style={{ textAlign: "right", marginTop: 30 }}>
+          <button
+            className="btn btn-success"
+            onClick={() => navigate("/payment", { state: { total } })}
+          >
+            Make Payment
+          </button>
+        </div>
       </div>
     </>
   );

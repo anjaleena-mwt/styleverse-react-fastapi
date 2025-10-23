@@ -1,220 +1,193 @@
+// src/pages/AdminProducts.jsx
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
-const API_BASE = "http://127.0.0.1:8000";
+import axios from "axios";
 
 export default function AdminProducts() {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [products, setProducts] = useState({ dresses: [], bags: [], jewellery: [] });
-  const [error, setError] = useState(null);
-  const [message, setMessage] = useState(null);
+  const [grouped, setGrouped] = useState({ dresses: [], bags: [], jewellery: [] });
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [form, setForm] = useState({ product_id: "", title: "", img: "", price: "", category: "dresses" });
+  const [editingId, setEditingId] = useState(null);
 
-  // form state for add/edit — no reviews field
-  const emptyForm = { id: "", category: "dresses", title: "", img: "/assets/images/default.jpg", price: "" };
-  const [form, setForm] = useState(emptyForm);
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const API = "http://127.0.0.1:8000";
+  const PLACEHOLDER = "/assets/images/placeholder.png";
 
+  // Fetch products on page load
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    if (!user?.is_admin) {
-      navigate("/login");
-      return;
-    }
     fetchProducts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigate]);
+  }, []);
 
   const fetchProducts = async () => {
     setLoading(true);
-    setError(null);
     try {
-      const res = await fetch(`${API_BASE}/admin/products`);
-      if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
-      const json = await res.json();
-      setProducts(json);
+      const res = await axios.get(`${API}/admin/products`);
+      setGrouped(res.data || { dresses: [], bags: [], jewellery: [] });
+      setMessage("");
     } catch (err) {
       console.error(err);
-      setError("Failed to load products");
+      setMessage("Failed to load products");
     } finally {
       setLoading(false);
     }
   };
 
-  const resetForm = () => {
-    setForm(emptyForm);
-    setEditing(false);
-    setMessage(null);
-  };
+  const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((p) => ({ ...p, [name]: value }));
-  };
-
-  const handleAdd = async (e) => {
+  const handleAddOrUpdate = async (e) => {
     e.preventDefault();
-    setSaving(true);
-    setError(null);
-    setMessage(null);
-    try {
-      const payload = {
-        ...form,
-        price: form.price ? Number(form.price) : 0,
-      };
-      const res = await fetch(`${API_BASE}/admin/products`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j.detail || `Add failed: ${res.status}`);
-      }
-      setMessage("Product added");
-      resetForm();
-      await fetchProducts();
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Add failed");
-    } finally {
-      setSaving(false);
-    }
-  };
+    setMessage("");
 
-  const startEdit = (cat, p) => {
-    console.log("startEdit called with:", cat, p);
-    setEditing(true);
-    setForm({
-      id: p.id,
-      category: cat,
-      title: p.title || "",
-      img: p.img || "/assets/images/default.jpg",
-      price: p.price !== undefined && p.price !== null ? String(p.price) : "",
-    });
-    setMessage(null);
-    setError(null);
-  };
-
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    if (editing && !form.id) {
-      setError("No product selected for update — please click Edit on a product first.");
+    if (!form.product_id || !form.title || !form.price) {
+      setMessage("product_id, title, and price are required");
       return;
     }
 
-    console.log("handleUpdate with form:", form);
-    setSaving(true);
-    setError(null);
-    setMessage(null);
     try {
-      const payload = {
-        title: form.title || "",
-        img: form.img || "/assets/images/default.jpg",
-        price: form.price ? Number(form.price) : 0,
-      };
-
-      const res = await fetch(`${API_BASE}/admin/products/${form.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j.detail || `Update failed: ${res.status}`);
+      const payload = { ...form, price: Number(form.price) };
+      if (editingId) {
+        await axios.put(`${API}/admin/products/${encodeURIComponent(editingId)}`, payload);
+        setMessage("Product updated");
+        setEditingId(null);
+      } else {
+        await axios.post(`${API}/admin/products`, payload);
+        setMessage("Product added");
       }
-      setMessage("Product updated");
-      resetForm();
+      setForm({ product_id: "", title: "", img: "", price: "", category: "dresses" });
       await fetchProducts();
     } catch (err) {
       console.error(err);
-      setError(err.message || "Update failed");
-    } finally {
-      setSaving(false);
+      setMessage(err.response?.data?.detail || "Operation failed");
     }
   };
 
-  const handleDelete = async (id) => {
+  const startEdit = (p) => {
+    setEditingId(p.product_id);
+    setForm({ ...p });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDelete = async (product_id) => {
     if (!window.confirm("Delete this product?")) return;
-    setSaving(true);
-    setError(null);
-    setMessage(null);
     try {
-      console.log("Deleting product id:", id);
-      const res = await fetch(`${API_BASE}/admin/products/${id}`, { method: "DELETE" });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j.detail || `Delete failed: ${res.status}`);
-      }
-      setMessage("Product deleted");
+      await axios.delete(`${API}/admin/products/${encodeURIComponent(product_id)}`);
+      setMessage("Deleted");
       await fetchProducts();
     } catch (err) {
       console.error(err);
-      setError(err.message || "Delete failed");
-    } finally {
-      setSaving(false);
+      setMessage(err.response?.data?.detail || "Failed to delete");
     }
   };
 
-  if (loading) return <div>Loading admin products...</div>;
+  const cancelEdit = () => {
+    setEditingId(null);
+    setForm({ product_id: "", title: "", img: "", price: "", category: "dresses" });
+    setMessage("");
+  };
+
+  // Image with fallback
+  const Img = ({ src, alt, style }) => {
+    const [err, setErr] = useState(false);
+    return (
+      <img
+        src={!src || err ? PLACEHOLDER : src}
+        alt={alt || "product image"}
+        onError={() => setErr(true)}
+        style={style}
+      />
+    );
+  };
+
+  // --- Styles ---
+  const containerStyle = { padding: 20, fontFamily: "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial" };
+  const formGrid = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 };
+  const cardGrid = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 12, marginTop: 12 };
+  const cardStyle = { display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between", padding: 12, borderRadius: 12, background: "#fff", border: "1px solid #eef2f6", boxShadow: "0 6px 18px rgba(2,6,23,0.04)", transition: "transform .12s ease, box-shadow .12s ease" };
+  const cardLeft = { display: "flex", gap: 12, alignItems: "center", maxWidth: "70%" };
+  const thumbBox = { width: 120, height: 100, display: "flex", alignItems: "center", justifyContent: "center", background: "#fafafa", borderRadius: 8, overflow: "hidden", border: "1px solid #f3f6f9" };
+  const thumbImg = { width: "100%", height: "100%", objectFit: "contain", display: "block" };
 
   return (
-    <div style={{ padding: 24 }}>
-      <h1 className="admin-heading"><b>Admin — Product Management</b></h1>
+    <div style={containerStyle}>
+      <h2>Admin — Products</h2>
+      <p style={{ color: "#4b5563", marginTop: 6, marginBottom: 12 }}>Manage products — add, edit or delete.</p>
 
-      {error && <div style={{ color: "red", marginBottom: 12 }}>{error}</div>}
-      {message && <div style={{ color: "green", marginBottom: 12 }}>{message}</div>}
+      {message && <div style={{ marginBottom: 12, color: "#046b56" }}>{message}</div>}
 
-      <section style={{ marginBottom: 24 }}>
-        <h2>{editing ? "Edit Product" : "Add Product"}</h2>
-        <form onSubmit={editing ? handleUpdate : handleAdd} style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          <select name="category" value={form.category} onChange={handleChange}>
-            <option value="dresses">Dresses</option>
-            <option value="bags">Bags</option>
-            <option value="jewellery">Jewellery</option>
-          </select>
-
-          <input name="title" placeholder="Title" value={form.title} onChange={handleChange} required />
-          <input name="img" placeholder="Image URL" value={form.img} onChange={handleChange} />
-          <input name="price" type="number" placeholder="Price" value={form.price} onChange={handleChange} required />
-
-          <button type="submit" disabled={saving}>{saving ? (editing ? "Updating..." : "Adding...") : (editing ? "Update" : "Add Product")}</button>
-
-          {editing && (
-            <button
-              type="button"
-              onClick={() => {
-                resetForm();
-              }}
-              disabled={saving}
-            >
-              Cancel
-            </button>
-          )}
-        </form>
-      </section>
-
-      <section style={{ display: "grid", gap: 20 }}>
-        {Object.keys(products).map((cat) => (
-          <div key={cat} style={{ border: "1px solid #ddd", padding: 12 }}>
-            <h3 style={{ textTransform: "capitalize" }}>{cat}</h3>
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              {(products[cat] || []).map((p) => (
-                <div key={p.id} style={{ width: 220, border: "1px solid #eee", padding: 8 }}>
-                  <img src={p.img} alt={p.title} style={{ width: "100%", height: 300, objectFit: "cover" }} />
-                  <h4>{p.title}</h4>
-                  <div>Price: ${p.price}</div>
-                  <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                    <button onClick={() => startEdit(cat, p)} disabled={saving}>Edit</button>
-                    <button onClick={() => handleDelete(p.id)} disabled={saving}>Delete</button>
-                  </div>
-                </div>
-              ))}
-            </div>
+      {/* Add/Edit Form */}
+      <form onSubmit={handleAddOrUpdate} style={{ marginBottom: 18, padding: 12, borderRadius: 8, background: "#fbfdff", border: "1px solid #eef2f6" }}>
+        <h3>{editingId ? "Edit product" : "Add new product"}</h3>
+        <div style={formGrid}>
+          <div>
+            <label>Product ID</label>
+            <input name="product_id" value={form.product_id} onChange={handleChange} disabled={!!editingId} placeholder="ef1 or bag1" style={{ width: "100%", padding: 8, borderRadius: 6, border: "1px solid #e6eef6" }} />
           </div>
-        ))}
-      </section>
+          <div>
+            <label>Title</label>
+            <input name="title" value={form.title} onChange={handleChange} placeholder="Title" style={{ width: "100%", padding: 8, borderRadius: 6, border: "1px solid #e6eef6" }} />
+          </div>
+          <div>
+            <label>Image URL</label>
+            <input name="img" value={form.img} onChange={handleChange} placeholder="/assets/images/ef1.jpg" style={{ width: "100%", padding: 8, borderRadius: 6, border: "1px solid #e6eef6" }} />
+            <small style={{ display: "block", marginTop: 6, color: "#6b7280" }}>Tip: place images in <code>public/assets/images/</code></small>
+          </div>
+          <div>
+            <label>Price</label>
+            <input name="price" value={form.price} onChange={handleChange} type="number" placeholder="200" style={{ width: "100%", padding: 8, borderRadius: 6, border: "1px solid #e6eef6" }} />
+          </div>
+          <div>
+            <label>Category</label>
+            <select name="category" value={form.category} onChange={handleChange} style={{ width: "100%", padding: 8, borderRadius: 6, border: "1px solid #e6eef6" }}>
+              <option value="dresses">dresses</option>
+              <option value="bags">bags</option>
+              <option value="jewellery">jewellery</option>
+            </select>
+          </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+            <button type="submit" style={{ padding: "8px 12px", borderRadius: 8, background: "#0ea5a4", color: "#fff", border: "none", cursor: "pointer" }}>
+              {editingId ? "Save changes" : "Add product"}
+            </button>
+            {editingId && <button type="button" onClick={cancelEdit} style={{ padding: "8px 12px", borderRadius: 8, background: "#eef2ff", border: "1px solid #e6eef6", cursor: "pointer" }}>Cancel</button>}
+          </div>
+        </div>
+
+        {/* Live preview */}
+        <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 12 }}>
+          <div style={thumbBox}><Img src={form.img} alt={form.title} style={thumbImg} /></div>
+          <div>
+            <div style={{ fontWeight: 700 }}>{form.title || "Preview title"}</div>
+            <div style={{ color: "#6b7280", marginTop: 6 }}>{form.category} • {form.price ? `₹${form.price}` : "₹0"}</div>
+          </div>
+        </div>
+      </form>
+
+      {/* Products List */}
+      {loading ? <div>Loading...</div> : (
+        <>
+          {["dresses", "bags", "jewellery"].map(category => (
+            <div key={category}>
+              <h4 style={{ marginTop: category === "dresses" ? 0 : 18, marginBottom: 6 }}>{category.charAt(0).toUpperCase() + category.slice(1)}</h4>
+              <div style={cardGrid}>
+                {grouped[category].map(p => (
+                  <div key={p.product_id} style={cardStyle} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-6px)"} onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>
+                    <div style={cardLeft}>
+                      <div style={thumbBox}><Img src={p.img} alt={p.title} style={thumbImg} /></div>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.title}</div>
+                        <div style={{ color: "#6b7280", marginTop: 6 }}>{p.product_id} • {p.category}</div>
+                        <div style={{ marginTop: 8, fontWeight: 700 }}>₹{p.price}</div>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <button onClick={() => startEdit(p)} style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #e6eef6", background: "#fff", cursor: "pointer" }}>Edit</button>
+                      <button onClick={() => handleDelete(p.product_id)} style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #fee2e2", background: "#fff", color: "#b91c1c", cursor: "pointer" }}>Delete</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </>
+      )}
     </div>
   );
 }

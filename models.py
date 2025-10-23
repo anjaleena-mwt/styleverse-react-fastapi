@@ -12,3 +12,10 @@ class UserLogin(BaseModel):
     user_email: EmailStr
     password: str = Field(..., min_length=1)
 
+class ProductCreate(BaseModel):
+    product_id: str
+    title: str
+    img: str
+    price: float
+    category: str
+

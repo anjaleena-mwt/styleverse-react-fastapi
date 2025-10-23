@@ -1,13 +1,12 @@
+# main.py
 import re
-from fastapi import FastAPI, HTTPException, Depends, status # Depends is used for dependency injection, status is a helper that provides HTTP status code constants
+from fastapi import FastAPI, HTTPException, Depends, status, Body
 from sqlalchemy.orm import Session
-from fastapi.middleware.cors import CORSMiddleware # CORS middleware enables / configures Cross-Origin Resource Sharing (lets the React app at localhost:3000 call the API at 127.0.0.1:8000)
+from fastapi.middleware.cors import CORSMiddleware
 from database import session, engine
-from database_models import Base, User
-from models import UserCreate, UserLogin
+from database_models import Base, User, Product
+from models import UserCreate, UserLogin, ProductCreate
 from products import categories, dressproducts, bagproducts, jewproducts
-
-from fastapi import Body
 from typing import List, Dict, Any
 import uuid
 
@@ -16,10 +15,9 @@ phone_re = re.compile(r'^\+?\d{7,15}$')
 # create DB tables if not present
 Base.metadata.create_all(bind=engine)
 
-# create the FastAPI application object
 app = FastAPI()
 
-# CORS: allow React dev server
+# allow dev React to call API
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
@@ -28,7 +26,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# DB dependency
 def get_db():
     db = session()
     try:
@@ -36,21 +33,29 @@ def get_db():
     finally:
         db.close()
 
-# ---------------- REGISTER ----------------
+# ---------------- helpers ----------------
+def serialize_product(p: Product) -> Dict[str, Any]:
+    return {
+        "id": p.id,
+        "product_id": p.product_id,
+        "title": p.title,
+        "img": p.img,
+        "price": p.price,
+        "category": p.category
+    }
+
+# ---------------- AUTH (unchanged) ----------------
 @app.post("/register", status_code=status.HTTP_201_CREATED)
 def register(user: UserCreate, db: Session = Depends(get_db)):
-
     existing = db.query(User).filter(
         (User.username == user.username) | (User.user_email == user.user_email)
     ).first()
     if existing:
         raise HTTPException(status_code=400, detail="Username or email already exists")
 
-    # manual password match check (if you removed pydantic validator)
     if user.password != user.confirm_password:
         raise HTTPException(status_code=400, detail="Passwords do not match")
 
-    # manual phone validation (if you removed pydantic validator)
     if not phone_re.match(user.phone_number):
         raise HTTPException(status_code=400, detail="Invalid phone number")
 
@@ -58,15 +63,15 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         username=user.username,
         user_email=user.user_email,
         password=user.password,
-        address=user.address,          
-        phone_number=user.phone_number 
+        address=user.address,
+        phone_number=user.phone_number
     )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
 
     return {
-        "message": "User registered successfully", 
+        "message": "User registered successfully",
         "user_id": db_user.id,
         "username": db_user.username,
         "user_email": db_user.user_email,
@@ -74,21 +79,75 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         "phone_number": db_user.phone_number
     }
 
-# ---------------- LOGIN ----------------
 @app.post("/login")
 def login(payload: UserLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.user_email == payload.user_email).first()
     if not user or user.password != payload.password:
         raise HTTPException(status_code=400, detail="Invalid email or password")
 
-    return {"message": "Login successful", 
-    "username": user.username, 
-    "user_id": user.id,
-    "user_email": user.user_email, 
-    "address": user.address,  
-    "phone_number": user.phone_number}
+    return {
+        "message": "Login successful",
+        "username": user.username,
+        "user_id": user.id,
+        "user_email": user.user_email,
+        "address": user.address,
+        "phone_number": user.phone_number
+    }
 
-# ---------------- endpoints ----------------
+# ---------------- SEED / CLEAR ----------------
+@app.post("/admin/seed-products")
+def seed_products(db: Session = Depends(get_db)):
+    """
+    Safe to re-run:
+      - updates any existing product (by product_id) with latest fields
+      - inserts new products
+    """
+    all_products = (
+        [(p, "dresses") for p in dressproducts] +
+        [(p, "bags") for p in bagproducts] +
+        [(p, "jewellery") for p in jewproducts]
+    )
+
+    inserted = 0
+    updated = 0
+    for p, cat in all_products:
+        pid = p.get("id")
+        title = p.get("title")
+        price = p.get("price")
+        img = p.get("img", "")
+
+        if not pid or title is None or price is None:
+            print("Skipping malformed product:", p)
+            continue
+
+        existing = db.query(Product).filter_by(product_id=pid).first()
+        if existing:
+            existing.title = title
+            existing.img = img
+            existing.price = price
+            existing.category = cat
+            updated += 1
+        else:
+            product = Product(
+                product_id=pid,
+                title=title,
+                img=img,
+                price=price,
+                category=cat
+            )
+            db.add(product)
+            inserted += 1
+
+    db.commit()
+    return {"message": f"{inserted} products inserted, {updated} products updated"}
+
+@app.post("/admin/clear-products")
+def clear_products(db: Session = Depends(get_db)):
+    db.query(Product).delete()
+    db.commit()
+    return {"message": "All products cleared"}
+
+# ---------------- public product endpoints ----------------
 @app.get("/")
 def greet():
     return {"message": "Welcome to StyleVerse"}
@@ -98,85 +157,72 @@ def get_categories():
     return categories
 
 @app.get("/dresses")
-def get_dress_products():
-    return dressproducts
+def get_dress_products(db: Session = Depends(get_db)):
+    products = db.query(Product).filter(Product.category == "dresses").all()
+    return [serialize_product(p) for p in products]
 
 @app.get("/bags")
-def get_bag_products():
-    return bagproducts
+def get_bag_products(db: Session = Depends(get_db)):
+    products = db.query(Product).filter(Product.category == "bags").all()
+    return [serialize_product(p) for p in products]
 
 @app.get("/jewellery")
-def get_jewellery_products():
-    return jewproducts
+def get_jewellery_products(db: Session = Depends(get_db)):
+    products = db.query(Product).filter(Product.category == "jewellery").all()
+    return [serialize_product(p) for p in products]
 
-
-# --- ADMIN product management endpoints ---
-
-# helper: find product list by category id
-def _get_product_list(category: str):
-    if category == "dresses":
-        return dressproducts
-    if category == "bags":
-        return bagproducts
-    if category == "jewellery":
-        return jewproducts
-    return None
-
-# GET all admin products combined (for admin UI convenience)
+# ---------------- admin endpoints (DB-backed) ----------------
 @app.get("/admin/products")
-def admin_list_products():
-    # return categories with products
-    return {
-        "dresses": dressproducts,
-        "bags": bagproducts,
-        "jewellery": jewproducts
-    }
+def admin_list_products(db: Session = Depends(get_db)):
+    products = db.query(Product).all()
+    grouped = {"dresses": [], "bags": [], "jewellery": [], "other": []}
+    for p in products:
+        item = serialize_product(p)
+        cat = (p.category or "").lower()
+        if cat in grouped:
+            grouped[cat].append(item)
+        else:
+            grouped["other"].append(item)
+    return grouped
 
-# POST add a product to a category
 @app.post("/admin/products", status_code=201)
-def admin_add_product(payload: Dict[str, Any] = Body(...)):
-    """
-    payload example:
-    { "category":"dresses", "title":"New", "img":"/assets/images/x.jpg", "price": 99, "reviews": 0 }
-    """
-    category = payload.get("category")
-    lst = _get_product_list(category)
-    if lst is None:
-        raise HTTPException(status_code=400, detail="Invalid category")
-    # create new id - ensure unique
-    new_id = f"{category[:2]}_{uuid.uuid4().hex[:6]}"
-    product = {
-        "id": payload.get("id", new_id),
-        "title": payload.get("title", "Untitled"),
-        "img": payload.get("img", "/assets/images/default.jpg"),
-        "price": payload.get("price", 0),
-        "reviews": payload.get("reviews", 0)
-    }
-    lst.append(product)
-    return {"message": "created", "product": product}
+def admin_add_product(payload: ProductCreate, db: Session = Depends(get_db)):
+    existing = db.query(Product).filter_by(product_id=payload.product_id).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Product already exists")
 
-# PUT update product by id (search all categories)
+    product = Product(
+        product_id=payload.product_id,
+        title=payload.title,
+        img=payload.img,
+        price=payload.price,
+        category=payload.category
+    )
+    db.add(product)
+    db.commit()
+    db.refresh(product)
+    return {"message": "Product added", "product": serialize_product(product)}
+
 @app.put("/admin/products/{product_id}")
-def admin_update_product(product_id: str, payload: Dict[str, Any] = Body(...)):
-    # search and update
-    for lst in (dressproducts, bagproducts, jewproducts):
-        for i, p in enumerate(lst):
-            if p.get("id") == product_id:
-                # update fields present in payload
-                p["title"] = payload.get("title", p["title"])
-                p["img"] = payload.get("img", p["img"])
-                p["price"] = payload.get("price", p["price"])
-                p["reviews"] = payload.get("reviews", p["reviews"])
-                lst[i] = p
-                return {"message": "updated", "product": p}
-    raise HTTPException(status_code=404, detail="Product not found")
+def admin_update_product(product_id: str, payload: ProductCreate, db: Session = Depends(get_db)):
+    product = db.query(Product).filter_by(product_id=product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
 
-# DELETE product by id
+    product.title = payload.title
+    product.img = payload.img
+    product.price = payload.price
+    product.category = payload.category
+    db.commit()
+    db.refresh(product)
+    return {"message": "Product updated", "product": serialize_product(product)}
+
 @app.delete("/admin/products/{product_id}")
-def admin_delete_product(product_id: str):
-    for lst in (dressproducts, bagproducts, jewproducts):
-        for i, p in enumerate(lst):
-            if p.get("id") == product_id:
-                lst.pop(i)
-                return {"message": "deleted", "product_id": product_id}
-    raise HTTPException(status_code=404, detail="Product not found")
+def admin_delete_product(product_id: str, db: Session = Depends(get_db)):
+    product = db.query(Product).filter_by(product_id=product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    db.delete(product)
+    db.commit()
+    return {"message": "deleted", "product_id": product_id}
