@@ -1,6 +1,6 @@
 // src/pages/AdminProducts.jsx
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "axios"; //axios is a library to make HTTP requests (talk to your backend API)
 
 export default function AdminProducts() {
   const [grouped, setGrouped] = useState({ dresses: [], bags: [], jewellery: [] });
@@ -31,11 +31,11 @@ export default function AdminProducts() {
     }
   };
 
-  const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+  const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value })); //setForm(f => ({ ...f, [name]: value })) copies the previous form and replaces only the changed field. This keeps the other fields intact.
 
   const handleAddOrUpdate = async (e) => {
-    e.preventDefault();
-    setMessage("");
+    e.preventDefault(); //stops the form from doing a full page reload (default browser behavior).
+    setMessage(""); //clear any prior message
 
     if (!form.product_id || !form.title || !form.price) {
       setMessage("product_id, title, and price are required");
